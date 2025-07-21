@@ -194,25 +194,6 @@ void SendRawBtis(u16 mes){
 }
 
 
-
-// Вместо текущей инициализации используйте:
-void InitMAX7219Chain() {
-    // Отправляем команды 4 раза (по одной на каждый чип в цепи)
-    for(uint8_t i = 0; i < 4; i++) {
-        SendBtis(0x0C01);  // Включить
-        SendBtis(0x0900);  // No decode
-        SendBtis(0x0A0F);  // Яркость
-        SendBtis(0x0B07);  // Все разряды
-        SendBtis(0x0F00);  // Нормальный режим
-    }
-
-    // Очистка всех 4 чипов
-    for(uint8_t digit = 1; digit <= 8; digit++) {
-        for(uint8_t chip = 0; chip < 4; chip++) {
-            SendBtis((digit << 8) | 0x00);
-        }
-    }
-}
 void Send(uint8_t reg, uint8_t data){
 	SendBtis(((u16)reg << 8) | data);
 }
@@ -220,20 +201,13 @@ void Send(uint8_t reg, uint8_t data){
 void SendRaw(uint8_t reg, uint8_t data){
 	SendRawBtis(((u16)reg << 8) | data);
 }
-// Для отправки данных во все 4 чипа:
+
 void SendToAllChips(uint8_t reg, uint8_t data) {
     for(uint8_t i = 0; i < 4; i++) {
         SendBtis(((u16)reg << 8) | data);
     }
 }
 
-// Или для разных данных в каждый чип (от последнего к первому):
-void SendToEachChip(uint8_t reg, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4) {
-    SendBtis(((u16)reg << 8) | data4); // Последний чип
-    SendBtis(((u16)reg << 8) | data3);
-    SendBtis(((u16)reg << 8) | data2);
-    SendBtis(((u16)reg << 8) | data1); // Первый чип
-}
 
 u8 RandomGen(u8 min, u8 max) {
     max++;
@@ -533,13 +507,12 @@ int main(void)
 
   // Очистка дисплея
   for(uint8_t i = 1; i <= 8; i++) {
-	  SendToAllChips(i , 0x00); // Отправка 0x00 во все регистры цифр
+	  SendToAllChips(i , 0x00);
   }
   ResetItem();
   ResetMatrix();
 
   while (1) {
-      // Зажигаем разные сегменты на разных чипах
 
 	  p_rand++;
 	  Update();
@@ -548,19 +521,6 @@ int main(void)
 	  HAL_Delay(TIME_SLEEP);
 	  ToggleItem();
 
-
-      // Очищаем все
-      /*SendRaw(1, 0x01);
-      SendRaw(2, 0x02);
-      SendRaw(3, 0x03);
-      SendRaw(4, 0x04);
-      PulseCS();
-      HAL_Delay(500);
-      SendToAllChips(1, 0x00);
-      SendToAllChips(2, 0x00);
-      SendToAllChips(3, 0x00);
-      SendToAllChips(4, 0x00);
-      HAL_Delay(500);*/
 
     /* USER CODE END WHILE */
 
